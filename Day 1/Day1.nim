@@ -3,7 +3,7 @@ import sequtils
 import sugar
 import algorithm
 import strformat
-import itertools
+import sets
 
 func partOne(nums: seq[int]): int =
   var bottomIndex = 0
@@ -20,11 +20,15 @@ func partOne(nums: seq[int]): int =
   return nums[bottomIndex] * nums[topIndex]
 
 func partTwo(nums: seq[int]): int =
-  for triplets in combinations(nums.len-1, 3):
-    let sum = nums[triplets[0]] + nums[triplets[1]] + nums[triplets[2]]
-    if sum == 2020:
-      return nums[triplets[0]] * nums[triplets[1]] * nums[triplets[2]]
-
+  let setOfNums = toHashSet(nums)
+  for i in countup(0, nums.len-1):
+    for j in countup(0, nums.len-1):
+      if i == j:
+        continue
+      let remainingAmount = 2020 - (nums[i] + nums[j])
+      if setOfNums.contains(remainingAmount):
+        return remainingAmount * nums[i] * nums[j]
+  
   raise newException(Exception, "No combination of triplets added up to 2020")
 
 let input = readFile("input.txt")
