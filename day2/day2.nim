@@ -2,44 +2,42 @@ import strutils
 import sequtils
 import sugar
 import strformat
+import strscans
 
-func partOne(input: seq[string]): int =
+proc singleCharMatcher(input: string, charVal: var char, start: int): int =
+  if start < input.len:
+    charVal = input[start]
+    result = 1
+
+proc partOne(input: seq[string]): int =
   var validPasswords = 0
   for line in input:
-    let lineParts = line.split(" ")
-    doAssert(lineParts.len == 3, fmt"line in input does not have three parts: {line}")
+    var lowerbound, upperbound: int
+    var testChar: char
+    var password: string
 
-    let bounds = lineParts[0].split("-").map(str => str.parseInt)
-    doAssert(bounds.len == 2, fmt"character count bounds are not formatted correctly: {lineParts[0]}")
-
-    doAssert(lineParts[1].len == 2, fmt"test char is not formatted correctly: {lineParts[1]}")
-    let testChar = lineParts[1][0]
-
-    let password = lineParts[2]
-
-    let charCount = password.count(testChar)
-    if charCount >= bounds[0] and charCount <= bounds[1]:
-      validPasswords += 1
+    if scanf(line, "$i-$i ${singleCharMatcher}: $w", lowerbound, upperbound, testChar, password):
+      let charCount = password.count(testChar)
+      if charCount >= lowerbound and charCount <= upperbound:
+        validPasswords += 1
+    else:
+      raise newException(Exception, fmt"line did not conform to expected pattern, line={line}")
   
   return validPasswords
 
 func partTwo(input: seq[string]): int =
   var validPasswords = 0
   for line in input:
-    let lineParts = line.split(" ")
-    doAssert(lineParts.len == 3, fmt"line in input does not have three parts: {line}")
+    var firstIndex, secondIndex: int
+    var testChar: char
+    var password: string
 
-    # subtract 1 to handle 1-based indexing
-    let indexes = lineParts[0].split("-").map(str => str.parseInt - 1)
-    doAssert(indexes.len == 2, fmt"character count bounds are not formatted correctly: {lineParts[0]}")
+    if scanf(line, "$i-$i ${singleCharMatcher}: $w", firstIndex, secondIndex, testChar, password):
+      if password[firstIndex-1] == testChar xor password[secondIndex-1] == testChar:
+        validPasswords += 1
+    else:
+      raise newException(Exception, fmt"line did not conform to expected pattern, line={line}")
 
-    doAssert(lineParts[1].len == 2, fmt"test char is not formatted correctly: {lineParts[1]}")
-    let testChar = lineParts[1][0]
-
-    let password = lineParts[2]
-
-    if password[indexes[0]] == testChar xor password[indexes[1]] == testChar:
-      validPasswords += 1
   return validPasswords
 
 let input = readFile("input.txt")
